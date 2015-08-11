@@ -1,0 +1,9 @@
+*.swp
+data
+log
+logs
+.config
+*.gz
+docker
+backup/
+*.deb
