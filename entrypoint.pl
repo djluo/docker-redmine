@@ -28,7 +28,8 @@ if ( -f $db_conf && (stat($db_conf))[4] != $uid ){
   system("chgrp", "docker", "$db_conf");
 }
 
-my @dirs = ("/redmine/logs", "/redmine/files");
+my @dirs = ("logs", "files","tmp", "public/plugin_assets");
+   @dirs = map { "/redmine/" . $_ } @dirs;
 foreach my $dir (@dirs) {
   if ( -d $dir && (stat($dir))[4] != $uid ){
     system("chown docker.docker -R " . $dir);
