@@ -29,7 +29,7 @@ app_port=${app_port:=${default_port}}
 _port
 
 _run() {
-  local mode="-d" # --restart=always"
+  local mode="-d --restart=always"
   local name="$container_name"
   #local cmd="ruby script/rails server webrick -e production -p9292"
   local cmd=""
