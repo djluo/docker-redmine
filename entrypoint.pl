@@ -22,11 +22,18 @@ unless (getpwuid("$uid")){
   system("/usr/sbin/useradd", "-U", "-u $uid", "-m", "docker");
 }
 
+# init
 my $db_conf="/redmine/config/database.yml";
 system("chmod","640", "$db_conf") if ( -f "$db_conf");
 if ( -f $db_conf && (stat($db_conf))[4] != $uid ){
   system("chgrp", "docker", "$db_conf");
 }
+
+my $secrt="/redmine/config/initializers/secret_token.rb";
+system("rake", "generate_secret_token") unless ( -f $secrt);
+
+my $ver_lock = "/nginx/public/redmine-". $ENV{'VER'} .".lock";
+system("/redmine/init.sh", "$ver_lock") unless (-f "$ver_lock");
 
 my @dirs = ("logs", "files","tmp", "public/plugin_assets");
    @dirs = map { "/redmine/" . $_ } @dirs;
@@ -35,13 +42,7 @@ foreach my $dir (@dirs) {
     system("chown docker.docker -R " . $dir);
   }
 }
-
-# init
-my $secrt="/redmine/config/initializers/secret_token.rb";
-system("rake", "generate_secret_token") unless ( -f $secrt);
-
-my $ver_lock = "/nginx/public/redmine-". $ENV{'VER'} .".lock";
-system("/redmine/init.sh", "$ver_lock") unless (-f "$ver_lock");
+system("chown docker.docker /redmine/logs/production.log");
 
 # 信号处理,无法自行回收
 $SIG{TERM} = sub {
