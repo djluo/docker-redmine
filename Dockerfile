@@ -4,7 +4,7 @@ FROM       docker.xlands-inc.com/baoyu/ruby-puma
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
 ENV  VER 3.1.0
-ADD  ./redmine-3.1.0.tar.gz /
+ADD  ./redmine-${VER}.tar.gz /
 
 COPY ./conf/database.yml /redmine-${VER}/config/
 

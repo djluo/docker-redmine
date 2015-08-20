@@ -43,29 +43,31 @@ system("rake", "generate_secret_token") unless ( -f $secrt);
 my $ver_lock = "/nginx/public/redmine-". $ENV{'VER'} .".lock";
 system("/redmine/init.sh", "$ver_lock") unless (-f "$ver_lock");
 
-if( $ENV{'RSYNC_PASSWORD'} ){
-  my $ip=$ENV{'backup_ip'};
-  my $dest=$ENV{'backup_dest'}."_".$ENV{'HOSTNAME'};
+# 信号处理,无法自行回收
+$SIG{TERM} = sub {
+  system("pumactl","stop")
+};
 
+my $pid=fork();
+if ($pid != 0) {
   system("rm", "-f", "/run/crond.pid") if ( -f "/run/crond.pid" );
   system("/usr/sbin/cron");
 
-  my $min  = int(rand(60));
-  my $hour = int(rand(5));
+  if( $ENV{'RSYNC_PASSWORD'} ){
+    my $ip=$ENV{'backup_ip'};
+    my $dest=$ENV{'backup_dest'}."_".$ENV{'HOSTNAME'};
 
-  my $min2 = $min;
-  $min2 = $min - 3 if $min > 3;
+    my $min  = int(rand(60));
+    my $hour = int(rand(5));
 
-  open (CRON,"|/usr/bin/crontab") or die "crontab error?";
-  print CRON ("$min2 $hour * * * (/usr/bin/rsync --del --port=2873 -al /redmine/files/ docker@". $ip ."::backup/$dest/)\n");
-  close(CRON);
+    open (CRON,"|/usr/bin/crontab") or die "crontab error?";
+    print CRON ("$min $hour * * * (/usr/bin/rsync --del --port=2873 -al /redmine/files/ docker@". $ip ."::backup/$dest/)\n");
+    close(CRON);
+  }
+  waitpid($pid,0);
+}else{
+  $( = $) = $gid; die "switch gid error\n" if $gid != $( ;
+  $< = $> = $uid; die "switch uid error\n" if $uid != $< ;
+  $ENV{'HOME'} = "/home/docker";
+  exec(@ARGV);
 }
-
-# 切换当前运行用户,先切GID.
-#$GID = $EGID = $gid;
-#$UID = $EUID = $uid;
-$( = $) = $gid; die "switch gid error\n" if $gid != $( ;
-$< = $> = $uid; die "switch uid error\n" if $uid != $< ;
-
-$ENV{'HOME'} = "/home/docker";
-exec(@ARGV);
