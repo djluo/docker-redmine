@@ -10,7 +10,5 @@ default:
         user_name: "yy@cc.com"
         password: "xx"
   attachments_storage_path: '/redmine/files'
-  autologin_cookie_name: 'al_uszch'
-  autologin_cookie_secure: true
 production:
 development:
