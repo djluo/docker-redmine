@@ -30,7 +30,7 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && bundle install --clean --without development test postgresql rmagick \
     && export http_proxy="http://172.17.42.1:8080/" \
     && apt-get purge -y $build \
-    && apt-get install -y ruby \
+    && apt-get install -y ruby git \
     && gem cleanup   \
     && apt-get clean \
     && unset http_proxy DEBIAN_FRONTEND \
